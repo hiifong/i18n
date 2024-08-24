@@ -4,32 +4,32 @@ import "testing"
 
 func TestI18n(t *testing.T) {
 	i18n := New()
-	zhCN := map[int]Language{
-		1: {
-			Code: 1,
-			Raw:  "你好",
+	zhCN := map[string]Language{
+		"hello": {
+			Key: "hello",
+			Raw: "你好",
 		},
-		2: {
-			Code: 2,
-			Raw:  "世界",
+		"world": {
+			Key: "world",
+			Raw: "世界",
 		},
-		3: {
-			Code: 3,
-			Raw:  "你好, 世界",
+		"hello_world": {
+			Key: "hello_world",
+			Raw: "你好, 世界",
 		},
 	}
-	enUS := map[int]Language{
-		1: {
-			Code: 1,
-			Raw:  "Hello",
+	enUS := map[string]Language{
+		"hello": {
+			Key: "hello",
+			Raw: "Hello",
 		},
-		2: {
-			Code: 2,
-			Raw:  "World",
+		"world": {
+			Key: "world",
+			Raw: "World",
 		},
-		3: {
-			Code: 3,
-			Raw:  "Hello, World",
+		"hello_world": {
+			Key: "hello_world",
+			Raw: "Hello, World",
 		},
 	}
 	err := i18n.Register("zh_CN", zhCN)
@@ -44,41 +44,41 @@ func TestI18n(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	code, msg, err := i18n.T("zh_CN", 1)
+	code, msg, err := i18n.T("zh_CN", "hello")
 	if err != nil {
 		t.Error(err)
 	}
-	t.Logf("code: %d, msg: %s", code, msg)
+	t.Logf("key: %s, msg: %s", code, msg)
 
-	code, msg, err = i18n.T("", 3)
+	code, msg, err = i18n.T("", "hello_world")
 	if err != nil {
 		t.Error(err)
 	}
-	t.Logf("code: %d, msg: %s", code, msg)
+	t.Logf("key: %s, msg: %s", code, msg)
 
-	err = i18n.Update("zh_CN", 3, Language{
-		Code: 3,
-		Raw:  "Hello, World",
+	err = i18n.Update("zh_CN", "world", Language{
+		Key: "hello_world",
+		Raw: "Hello, World",
 	})
 	if err != nil {
 		t.Error(err)
 	}
 
-	err = i18n.Update("zh_CN", 3, nil)
+	err = i18n.Update("zh_CN", "hello", nil)
 	if err != nil {
 		t.Error(err)
 	}
 
-	err = i18n.Update("zh_CN", 4, Language{})
+	err = i18n.Update("zh_CN", "unknown", Language{})
 	if err != nil {
 		t.Error(err)
 	}
 
-	t.Logf("onlye t: %s", i18n.OnlyT("zh_CN", 3))
+	t.Logf("onlye t: %s", i18n.OnlyT("zh_CN", "hello_world"))
 
-	code, msg, err = i18n.T("zh_CN", 4)
+	code, msg, err = i18n.T("zh_CN", "unknown")
 	if err != nil {
 		t.Error(err)
 	}
-	t.Logf("zh_CN code 4: %d --> %s --> %v", code, msg, err)
+	t.Logf("zh_CN code 4: %s --> %s --> %v", code, msg, err)
 }

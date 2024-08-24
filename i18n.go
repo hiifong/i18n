@@ -11,31 +11,31 @@ type I18ner interface {
 	Register(lang string, i18n interface{}) error
 
 	// Update 更新翻译, 如果存在翻译则更新，否则添加翻译
-	Update(lang string, code int, t interface{}) error
+	Update(lang string, key string, t interface{}) error
 
 	// SetDefault 设置默认语言
 	SetDefault(lang string) error
 
 	// T 获取翻译
-	T(lang string, code int) (int, string, error)
+	T(lang string, key string) (string, string, error)
 
 	// OnlyT 仅获取翻译
-	OnlyT(lang string, code int) string
+	OnlyT(lang string, key string) string
 }
 
 type Language struct {
-	Code int
-	Raw  interface{}
+	Key string
+	Raw interface{}
 }
 
 func (l *Language) String() string {
-	return fmt.Sprintf("Language {Code: %d, Raw: %v}", l.Code, l.Raw)
+	return fmt.Sprintf("Language {Key: %s, Raw: %v}", l.Key, l.Raw)
 }
 
 type I18n struct {
 	mu    sync.RWMutex
 	first string
-	i18n  map[string]map[int]Language
+	i18n  map[string]map[string]Language
 }
 
 type Option func(*I18n)
@@ -48,13 +48,13 @@ func WithDefaultLang(lang string) Option {
 
 func WithLang(lang string, i18n interface{}) Option {
 	return func(i *I18n) {
-		i.i18n[lang] = i18n.(map[int]Language)
+		i.i18n[lang] = i18n.(map[string]Language)
 	}
 }
 
 func New(options ...Option) *I18n {
 	i18n := new(I18n)
-	i18n.i18n = make(map[string]map[int]Language)
+	i18n.i18n = make(map[string]map[string]Language)
 	for _, option := range options {
 		if option != nil {
 			option(i18n)
@@ -74,7 +74,7 @@ func (i *I18n) Register(lang string, i18n interface{}) error {
 	if _, ok := i.i18n[lang]; ok {
 		return fmt.Errorf("language %s is already registered", lang)
 	}
-	l, ok := i18n.(map[int]Language)
+	l, ok := i18n.(map[string]Language)
 	if !ok {
 		return fmt.Errorf("this %+v is not support", lang)
 	}
@@ -82,7 +82,7 @@ func (i *I18n) Register(lang string, i18n interface{}) error {
 	return nil
 }
 
-func (i *I18n) Update(lang string, code int, t interface{}) error {
+func (i *I18n) Update(lang string, key string, t interface{}) error {
 	i.mu.Lock()
 	defer i.mu.Unlock()
 	if lang == "" {
@@ -95,10 +95,10 @@ func (i *I18n) Update(lang string, code int, t interface{}) error {
 	if !ok {
 		return fmt.Errorf("this %s is not support", lang)
 	}
-	if code != l.Code {
-		return fmt.Errorf("this %s code is not match", lang)
+	if key != l.Key {
+		return fmt.Errorf("this %s key is not match", lang)
 	}
-	i.i18n[lang][code] = l
+	i.i18n[lang][key] = l
 	return nil
 }
 
@@ -115,42 +115,42 @@ func (i *I18n) SetDefault(lang string) error {
 	return nil
 }
 
-func (i *I18n) T(lang string, code int) (int, string, error) {
+func (i *I18n) T(lang string, key string) (string, string, error) {
 	i.mu.RLock()
 	defer i.mu.RUnlock()
 	if i.first == "" {
-		return code, "", fmt.Errorf("default language is not set")
+		return key, "", fmt.Errorf("default language is not set")
 	}
-	t := func(lang string, code int) (int, string, error) {
+	t := func(lang string, key string) (string, string, error) {
 		lm, ok := i.i18n[lang]
 		if !ok {
 			lm, ok = i.i18n[i.first]
 		}
-		l, ok := lm[code]
+		l, ok := lm[key]
 		if !ok {
-			l, ok = i.i18n[i.first][code]
+			l, ok = i.i18n[i.first][key]
 		}
 		if !ok {
-			return code, "", fmt.Errorf("language %s is not registered", lang)
+			return key, "", fmt.Errorf("language %s is not registered", lang)
 		}
 		msg, ok := l.Raw.(string)
 		if !ok {
-			return code, "", fmt.Errorf("language %s is not support", lang)
+			return key, "", fmt.Errorf("language %s is not support", lang)
 		}
 		if msg == "" {
-			return code, "", fmt.Errorf("language %s is empty", lang)
+			return key, "", fmt.Errorf("language %s is empty", lang)
 		}
-		return code, msg, nil
+		return key, msg, nil
 	}
 
 	if lang == "" {
-		return t(i.first, code)
+		return t(i.first, key)
 	}
-	return t(lang, code)
+	return t(lang, key)
 }
 
-func (i *I18n) OnlyT(lang string, code int) string {
-	_, msg, err := i.T(lang, code)
+func (i *I18n) OnlyT(lang string, key string) string {
+	_, msg, err := i.T(lang, key)
 	if err != nil {
 		return ""
 	}
