@@ -2,6 +2,7 @@ package i18n
 
 import (
 	"fmt"
+	"sync"
 )
 
 // I18ner 国际化接口
@@ -9,8 +10,8 @@ type I18ner interface {
 	// Register 注册新的语言
 	Register(lang string, i18n interface{}) error
 
-	// Add 添加翻译
-	Add(lang string, code int, t interface{}) error
+	// Update 更新翻译, 如果存在翻译则更新，否则添加翻译
+	Update(lang string, code int, t interface{}) error
 
 	// SetDefault 设置默认语言
 	SetDefault(lang string) error
@@ -32,6 +33,7 @@ func (l *Language) String() string {
 }
 
 type I18n struct {
+	mu    sync.RWMutex
 	first string
 	i18n  map[string]map[int]Language
 }
@@ -64,6 +66,8 @@ func New(options ...Option) *I18n {
 var _ I18ner = (*I18n)(nil)
 
 func (i *I18n) Register(lang string, i18n interface{}) error {
+	i.mu.Lock()
+	defer i.mu.Unlock()
 	if _, ok := i.i18n[lang]; ok {
 		return fmt.Errorf("language %s is already registered", lang)
 	}
@@ -75,7 +79,9 @@ func (i *I18n) Register(lang string, i18n interface{}) error {
 	return nil
 }
 
-func (i *I18n) Add(lang string, code int, t interface{}) error {
+func (i *I18n) Update(lang string, code int, t interface{}) error {
+	i.mu.Lock()
+	defer i.mu.Unlock()
 	if _, ok := i.i18n[lang]; !ok {
 		return fmt.Errorf("language %s is not registered", lang)
 	}
@@ -91,6 +97,8 @@ func (i *I18n) Add(lang string, code int, t interface{}) error {
 }
 
 func (i *I18n) SetDefault(lang string) error {
+	i.mu.Lock()
+	defer i.mu.Unlock()
 	if _, ok := i.i18n[lang]; !ok {
 		return fmt.Errorf("language %s is not registered", lang)
 	}
@@ -99,6 +107,8 @@ func (i *I18n) SetDefault(lang string) error {
 }
 
 func (i *I18n) T(lang string, code int) (int, string, error) {
+	i.mu.RLock()
+	defer i.mu.RUnlock()
 	if i.first == "" {
 		return code, "", fmt.Errorf("default language is not set")
 	}
