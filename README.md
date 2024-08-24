@@ -15,8 +15,8 @@ type I18ner interface {
 	// Register 注册新的语言
 	Register(lang string, i18n interface{}) error
 
-	// Add 添加翻译
-	Add(lang string, code int, t interface{}) error
+	// Update 更新翻译, 如果存在翻译则更新，否则添加翻译 
+	Update(lang string, code int, t interface{}) error
 
 	// SetDefault 设置默认语言
 	SetDefault(lang string) error
