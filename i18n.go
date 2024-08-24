@@ -11,21 +11,20 @@ type I18ner interface {
 	Register(lang string, i18n interface{}) error
 
 	// Update 更新翻译, 如果存在翻译则更新，否则添加翻译
-	Update(lang string, key string, t interface{}) error
+	Update(lang, key string, i18n interface{}) error
 
 	// SetDefault 设置默认语言
 	SetDefault(lang string) error
 
 	// T 获取翻译
-	T(lang string, key string) (string, string, error)
+	T(lang, key string) (string, string, error)
 
 	// OnlyT 仅获取翻译
 	OnlyT(lang string, key string) string
 }
 
 type Language struct {
-	Key string
-	Raw interface{}
+	Key, Raw string
 }
 
 func (l *Language) String() string {
@@ -82,7 +81,7 @@ func (i *I18n) Register(lang string, i18n interface{}) error {
 	return nil
 }
 
-func (i *I18n) Update(lang string, key string, t interface{}) error {
+func (i *I18n) Update(lang, key string, i18n interface{}) error {
 	i.mu.Lock()
 	defer i.mu.Unlock()
 	if lang == "" {
@@ -91,7 +90,7 @@ func (i *I18n) Update(lang string, key string, t interface{}) error {
 	if _, ok := i.i18n[lang]; !ok {
 		return fmt.Errorf("language %s is not registered", lang)
 	}
-	l, ok := t.(Language)
+	l, ok := i18n.(Language)
 	if !ok {
 		return fmt.Errorf("this %s is not support", lang)
 	}
@@ -133,14 +132,13 @@ func (i *I18n) T(lang string, key string) (string, string, error) {
 		if !ok {
 			return key, "", fmt.Errorf("language %s is not registered", lang)
 		}
-		msg, ok := l.Raw.(string)
-		if !ok {
-			return key, "", fmt.Errorf("language %s is not support", lang)
-		}
-		if msg == "" {
+		if l.Raw == "" {
 			return key, "", fmt.Errorf("language %s is empty", lang)
 		}
-		return key, msg, nil
+		if key != l.Key {
+			return key, "", fmt.Errorf("language %s key is not match", lang)
+		}
+		return l.Key, l.Raw, nil
 	}
 
 	if lang == "" {
