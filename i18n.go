@@ -68,6 +68,9 @@ var _ I18ner = (*I18n)(nil)
 func (i *I18n) Register(lang string, i18n interface{}) error {
 	i.mu.Lock()
 	defer i.mu.Unlock()
+	if lang == "" {
+		return fmt.Errorf("lang can't be empty")
+	}
 	if _, ok := i.i18n[lang]; ok {
 		return fmt.Errorf("language %s is already registered", lang)
 	}
@@ -113,7 +116,14 @@ func (i *I18n) T(lang string, code int) (int, string, error) {
 		return code, "", fmt.Errorf("default language is not set")
 	}
 	t := func(lang string, code int) (int, string, error) {
-		l, ok := i.i18n[lang][code]
+		lm, ok := i.i18n[lang]
+		if !ok {
+			lm, ok = i.i18n[i.first]
+		}
+		l, ok := lm[code]
+		if !ok {
+			l, ok = i.i18n[i.first][code]
+		}
 		if !ok {
 			return code, "", fmt.Errorf("language %s is not registered", lang)
 		}

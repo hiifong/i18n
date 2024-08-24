@@ -4,7 +4,7 @@ golang i18n
 ## install
 
 ```shell
-go get github.com/hiifong/i18n@v1.0.1
+go get github.com/hiifong/i18n@v1.0.2
 ```
 
 ## i18n interface

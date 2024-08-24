@@ -56,5 +56,19 @@ func TestI18n(t *testing.T) {
 	}
 	t.Logf("code: %d, msg: %s", code, msg)
 
-	t.Logf("onlye t: %s", i18n.OnlyT("", 3))
+	err = i18n.Update("zh_CN", 3, Language{
+		Code: 3,
+		Raw:  "Hello, World",
+	})
+	if err != nil {
+		t.Error(err)
+	}
+
+	t.Logf("onlye t: %s", i18n.OnlyT("zh_CN", 3))
+
+	code, msg, err = i18n.T("zh_CN", 4)
+	if err != nil {
+		t.Error(err)
+	}
+	t.Logf("zh_CN code 4: %d --> %s --> %v", code, msg, err)
 }
