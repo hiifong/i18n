@@ -4,7 +4,7 @@ golang i18n
 ## install
 
 ```shell
-go get github.com/hiifong/i18n@v1.0.2
+go get github.com/hiifong/i18n@v1.1.0
 ```
 
 ## i18n interface
@@ -83,6 +83,14 @@ func TestI18n(t *testing.T) {
 		t.Error(err)
 	}
 	t.Logf("code: %d, msg: %s", code, msg)
+
+	err = i18n.Update("zh_CN", 3, Language{
+		Code: 3,
+		Raw:  "Hello, World",
+	})
+	if err != nil {
+		t.Error(err)
+	}
 
 	code, msg, err = i18n.T("", 3)
 	if err != nil {

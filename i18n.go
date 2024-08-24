@@ -85,6 +85,9 @@ func (i *I18n) Register(lang string, i18n interface{}) error {
 func (i *I18n) Update(lang string, code int, t interface{}) error {
 	i.mu.Lock()
 	defer i.mu.Unlock()
+	if lang == "" {
+		return fmt.Errorf("language can't be empty")
+	}
 	if _, ok := i.i18n[lang]; !ok {
 		return fmt.Errorf("language %s is not registered", lang)
 	}
@@ -102,6 +105,9 @@ func (i *I18n) Update(lang string, code int, t interface{}) error {
 func (i *I18n) SetDefault(lang string) error {
 	i.mu.Lock()
 	defer i.mu.Unlock()
+	if lang == "" {
+		return fmt.Errorf("lang can't be empty")
+	}
 	if _, ok := i.i18n[lang]; !ok {
 		return fmt.Errorf("language %s is not registered", lang)
 	}
