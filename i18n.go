@@ -9,19 +9,27 @@ import (
 type I18ner interface {
 	// Register 注册新的语言
 	Register(lang string, i18n interface{}) error
-
 	// Update 更新翻译, 如果存在翻译则更新，否则添加翻译
 	Update(lang, key string, i18n interface{}) error
-
 	// SetDefault 设置默认语言
 	SetDefault(lang string) error
-
 	// T 获取翻译
 	T(lang, key string) (string, string, error)
-
 	// OnlyT 仅获取翻译
 	OnlyT(lang string, key string) string
 }
+
+type Type string
+
+const (
+	Default Type = "default"
+	Ent     Type = "ent"
+	Gorm    Type = "gorm"
+)
+
+var (
+	once = sync.Once{}
+)
 
 type Language struct {
 	Key, Raw string
@@ -32,125 +40,110 @@ func (l *Language) String() string {
 }
 
 type I18n struct {
-	mu    sync.RWMutex
-	first string
-	i18n  map[string]map[string]Language
+	t       Type // adapter type
+	dns     string
+	opts    []interface{}
+	adapter I18ner
 }
 
 type Option func(*I18n)
 
+func WithAdapter(t Type, dns ...string) Option {
+	return func(i *I18n) {
+		if t != "" {
+			i.t = t
+		}
+		if len(dns) == 1 {
+			i.dns = dns[0]
+		}
+	}
+}
+
 func WithDefaultLang(lang string) Option {
 	return func(i *I18n) {
-		i.first = lang
+		switch i.t {
+		case Ent:
+			i.opts = append(i.opts, EntAdapterWithDefaultLang(lang))
+		case Gorm:
+			i.opts = append(i.opts, GormAdapterWithDefaultLang(lang))
+		case Default:
+			i.opts = append(i.opts, DefaultAdapterWithDefaultLang(lang))
+		default:
+			i.opts = append(i.opts, DefaultAdapterWithDefaultLang(lang))
+		}
 	}
 }
 
 func WithLang(lang string, i18n interface{}) Option {
 	return func(i *I18n) {
-		i.i18n[lang] = i18n.(map[string]Language)
+		switch i.t {
+		case Ent:
+			i.opts = append(i.opts, EntAdapterWithLang(lang, i18n))
+		case Gorm:
+			i.opts = append(i.opts, GormAdapterWithLang(lang, i18n))
+		case Default:
+			i.opts = append(i.opts, DefaultAdapterWithLang(lang, i18n))
+		default:
+			i.opts = append(i.opts, DefaultAdapterWithLang(lang, i18n))
+		}
 	}
 }
 
-func New(options ...Option) *I18n {
-	i18n := new(I18n)
-	i18n.i18n = make(map[string]map[string]Language)
+func New(options ...Option) (*I18n, error) {
+	i := new(I18n)
+	var err error
+	//once.Do(func() {
+	i.t = Default
 	for _, option := range options {
 		if option != nil {
-			option(i18n)
+			option(i)
 		}
 	}
-	return i18n
+	switch i.t {
+	case Ent:
+		var opts []EntOption
+		for _, opt := range i.opts {
+			opts = append(opts, opt.(EntOption))
+		}
+		i.adapter, err = NewEnt(i.dns, opts...)
+	case Gorm:
+		var opts []GormOption
+		for _, opt := range i.opts {
+			opts = append(opts, opt.(GormOption))
+		}
+		i.adapter, err = NewGorm(i.dns, opts...)
+	default:
+		var opts []DefaultOption
+		for _, opt := range i.opts {
+			opts = append(opts, opt.(DefaultOption))
+		}
+		i.adapter, err = NewDefault(opts...)
+	}
+	//})
+	if err != nil {
+		return nil, err
+	}
+	return i, nil
 }
 
 var _ I18ner = (*I18n)(nil)
 
 func (i *I18n) Register(lang string, i18n interface{}) error {
-	i.mu.Lock()
-	defer i.mu.Unlock()
-	if lang == "" {
-		return fmt.Errorf("lang can't be empty")
-	}
-	if _, ok := i.i18n[lang]; ok {
-		return fmt.Errorf("language %s is already registered", lang)
-	}
-	l, ok := i18n.(map[string]Language)
-	if !ok {
-		return fmt.Errorf("this %+v is not support", lang)
-	}
-	i.i18n[lang] = l
-	return nil
+	return i.adapter.Register(lang, i18n)
 }
 
 func (i *I18n) Update(lang, key string, i18n interface{}) error {
-	i.mu.Lock()
-	defer i.mu.Unlock()
-	if lang == "" {
-		return fmt.Errorf("language can't be empty")
-	}
-	if _, ok := i.i18n[lang]; !ok {
-		return fmt.Errorf("language %s is not registered", lang)
-	}
-	l, ok := i18n.(Language)
-	if !ok {
-		return fmt.Errorf("this %s is not support", lang)
-	}
-	if key != l.Key {
-		return fmt.Errorf("this %s key is not match", lang)
-	}
-	i.i18n[lang][key] = l
-	return nil
+	return i.adapter.Update(lang, key, i18n)
 }
 
 func (i *I18n) SetDefault(lang string) error {
-	i.mu.Lock()
-	defer i.mu.Unlock()
-	if lang == "" {
-		return fmt.Errorf("lang can't be empty")
-	}
-	if _, ok := i.i18n[lang]; !ok {
-		return fmt.Errorf("language %s is not registered", lang)
-	}
-	i.first = lang
-	return nil
+	return i.adapter.SetDefault(lang)
 }
 
 func (i *I18n) T(lang string, key string) (string, string, error) {
-	i.mu.RLock()
-	defer i.mu.RUnlock()
-	if i.first == "" {
-		return key, "", fmt.Errorf("default language is not set")
-	}
-	t := func(lang string, key string) (string, string, error) {
-		lm, ok := i.i18n[lang]
-		if !ok {
-			lm, ok = i.i18n[i.first]
-		}
-		l, ok := lm[key]
-		if !ok {
-			l, ok = i.i18n[i.first][key]
-		}
-		if !ok {
-			return key, "", fmt.Errorf("language %s is not registered", lang)
-		}
-		if l.Raw == "" {
-			return key, "", fmt.Errorf("language %s is empty", lang)
-		}
-		if key != l.Key {
-			return key, "", fmt.Errorf("language %s key is not match", lang)
-		}
-		return l.Key, l.Raw, nil
-	}
-
-	if lang == "" {
-		return t(i.first, key)
-	}
-	return t(lang, key)
+	return i.adapter.T(lang, key)
 }
 
 func (i *I18n) OnlyT(lang string, key string) string {
-	_, msg, err := i.T(lang, key)
-	if err != nil {
-		return ""
-	}
-	return msg
+	return i.adapter.OnlyT(lang, key)
 }

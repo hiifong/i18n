@@ -1,9 +1,10 @@
 package i18n
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestI18n(t *testing.T) {
-	i18n := New()
 	zhCN := map[string]Language{
 		"hello": {
 			Key: "hello",
@@ -32,53 +33,56 @@ func TestI18n(t *testing.T) {
 			Raw: "Hello, World",
 		},
 	}
-	err := i18n.Register("zh_CN", zhCN)
+	i18n, _ := New(
+		WithAdapter(Default),
+		WithDefaultLang(EnUS),
+		WithLang(ZhCN, zhCN),
+	)
+	err := i18n.Register(EnUS, enUS)
 	if err != nil {
 		t.Error(err)
 	}
-	err = i18n.Register("en_US", enUS)
+	key, msg, err := i18n.T(ZhCN, "hello")
 	if err != nil {
 		t.Error(err)
 	}
-	err = i18n.SetDefault("en_US")
-	if err != nil {
-		t.Error(err)
-	}
-	code, msg, err := i18n.T("zh_CN", "hello")
-	if err != nil {
-		t.Error(err)
-	}
-	t.Logf("key: %s, msg: %s", code, msg)
+	t.Logf("key: %s, msg: %s", key, msg)
 
-	code, msg, err = i18n.T("", "hello_world")
+	key, msg, err = i18n.T("", "hello_world")
 	if err != nil {
 		t.Error(err)
 	}
-	t.Logf("key: %s, msg: %s", code, msg)
+	t.Logf("key: %s, msg: %s", key, msg)
 
-	err = i18n.Update("zh_CN", "world", Language{
-		Key: "hello_world",
+	err = i18n.Update(ZhCN, "world", Language{
+		Key: "world",
 		Raw: "Hello, World",
 	})
 	if err != nil {
 		t.Error(err)
 	}
 
-	err = i18n.Update("zh_CN", "hello", nil)
+	key, msg, err = i18n.T(ZhCN, "world")
+	if err != nil {
+		t.Error(err)
+	}
+	t.Logf("key: %s, msg: %s", key, msg)
+
+	err = i18n.Update(ZhCN, "hello", nil)
 	if err != nil {
 		t.Error(err)
 	}
 
-	err = i18n.Update("zh_CN", "unknown", Language{})
+	err = i18n.Update(ZhCN, "unknown", Language{})
 	if err != nil {
 		t.Error(err)
 	}
 
-	t.Logf("onlye t: %s", i18n.OnlyT("zh_CN", "hello_world"))
+	t.Logf("onlye t: %s", i18n.OnlyT(ZhCN, "hello_world"))
 
-	code, msg, err = i18n.T("zh_CN", "unknown")
+	key, msg, err = i18n.T(ZhHK, "hello")
 	if err != nil {
 		t.Error(err)
 	}
-	t.Logf("zh_CN code 4: %s --> %s --> %v", code, msg, err)
+	t.Logf("zh_HK key: %s --> msg: %s --> err: %v", key, msg, err)
 }
