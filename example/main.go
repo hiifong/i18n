@@ -60,13 +60,18 @@ func main() {
 	}
 	fmt.Printf("key: %s, msg: %s\n", code, msg)
 
-	err = i.Update(i18n.ZhCN, "world", i18n.Language{
-		Key: "hello_world",
+	err = i.Update(i18n.EnUS, "world", i18n.Language{
+		Key: "world",
 		Raw: "Hello, World",
 	})
 	if err != nil {
 		fmt.Println(err)
 	}
+	key, msg, err := i.T(i18n.EnUS, "world")
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("key: %s, msg: %s\n", key, msg)
 
 	err = i.Update(i18n.ZhCN, "hello", nil)
 	if err != nil {
@@ -80,7 +85,7 @@ func main() {
 
 	fmt.Printf("onlye t: %s\n", i.OnlyT(i18n.ZhCN, "hello_world"))
 
-	key, msg, err := i.T(i18n.ZhHK, "hello")
+	key, msg, err = i.T(i18n.ZhHK, "hello")
 	if err != nil {
 		fmt.Println(err)
 	}

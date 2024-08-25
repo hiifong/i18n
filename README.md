@@ -91,13 +91,18 @@ func main() {
 	}
 	fmt.Printf("key: %s, msg: %s\n", code, msg)
 
-	err = i.Update(i18n.ZhCN, "world", i18n.Language{
-		Key: "hello_world",
+	err = i.Update(i18n.EnUS, "world", i18n.Language{
+		Key: "world",
 		Raw: "Hello, World",
 	})
 	if err != nil {
 		fmt.Println(err)
 	}
+	key, msg, err := i.T(i18n.EnUS, "world")
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("key: %s, msg: %s\n", key, msg)
 
 	err = i.Update(i18n.ZhCN, "hello", nil)
 	if err != nil {
@@ -111,12 +116,22 @@ func main() {
 
 	fmt.Printf("onlye t: %s\n", i.OnlyT(i18n.ZhCN, "hello_world"))
 
-	key, msg, err := i.T(i18n.ZhHK, "hello")
+	key, msg, err = i.T(i18n.ZhHK, "hello")
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Printf("zh_HK key: %s --> msg: %s --> err:%v\n", key, msg, err)
 }
+
+// Output:
+language zh-CN is already registered
+key: hello, msg: 你好
+key: hello_world, msg: Hello, World
+key: world, msg: Hello, World
+this zh-CN is not support
+this zh-CN key is not match
+onlye t: 你好, 世界
+zh_HK key: hello --> msg: Hello --> err:<nil>
 ```
 
 ## 附件 - 国际化开发的各国语言标识
