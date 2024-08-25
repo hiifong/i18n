@@ -4,8 +4,9 @@ package i18n
 // 语言标识|国家地区
 const (
 	ZhCN = "zh-CN" // 简体中文(中国)
-	ZhTW = "zh-TW" // 繁体中文(中国台湾)
 	ZhHK = "zh-HK" // 繁体中文(中国香港)
+	ZhMO = "zh-MO" // 繁体中文(中国澳门)
+	ZhTW = "zh-TW" // 繁体中文(中国台湾)
 	EnHK = "en-HK" // 英语(中国香港)
 	EnUS = "en-US" // 英语(美国)
 	EnGB = "en-GB" // 英语(英国)
