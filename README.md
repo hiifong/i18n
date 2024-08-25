@@ -11,7 +11,7 @@ go get github.com/hiifong/i18n@v1.3.1
 
 ```go
 // I18ner 国际化接口
-        type I18ner interface {
+type I18ner interface {
         // Register 注册新的语言
         Register(lang string, i18n interface{}) error
         // Update 更新翻译, 如果存在翻译则更新，否则添加翻译
