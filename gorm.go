@@ -14,21 +14,21 @@ func (i *GormI18n) TableName() string {
 	return "i18n"
 }
 
-type GormOption func(n *GormI18n)
+type gormOption func(n *GormI18n)
 
-func GormAdapterWithDefaultLang(lang string) GormOption {
+func gormAdapterWithDefaultLang(lang string) gormOption {
 	return func(i *GormI18n) {
 		// TODO
 	}
 }
 
-func GormAdapterWithLang(lang string, i18n interface{}) GormOption {
+func gormAdapterWithLang(lang string, i18n interface{}) gormOption {
 	return func(i *GormI18n) {
 		// TODO
 	}
 }
 
-func NewGorm(dns string, options ...GormOption) (*GormI18n, error) {
+func newGorm(dns string, options ...gormOption) (*GormI18n, error) {
 	i18n := new(GormI18n)
 	for _, option := range options {
 		if option != nil {

@@ -11,21 +11,21 @@ type DefaultAdapter struct {
 	i18n  map[string]map[string]Language
 }
 
-type DefaultOption func(*DefaultAdapter)
+type defaultOption func(*DefaultAdapter)
 
-func DefaultAdapterWithDefaultLang(lang string) DefaultOption {
+func defaultAdapterWithDefaultLang(lang string) defaultOption {
 	return func(i *DefaultAdapter) {
 		i.first = lang
 	}
 }
 
-func DefaultAdapterWithLang(lang string, i18n interface{}) DefaultOption {
+func defaultAdapterWithLang(lang string, i18n interface{}) defaultOption {
 	return func(i *DefaultAdapter) {
 		i.i18n[lang] = i18n.(map[string]Language)
 	}
 }
 
-func NewDefault(options ...DefaultOption) (*DefaultAdapter, error) {
+func newDefault(options ...defaultOption) (*DefaultAdapter, error) {
 	i := new(DefaultAdapter)
 	i.i18n = make(map[string]map[string]Language)
 	for _, option := range options {

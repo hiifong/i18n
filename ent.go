@@ -8,21 +8,21 @@ type EntI18n struct {
 	schema.EntI18n
 }
 
-type EntOption func(n *EntI18n)
+type entOption func(n *EntI18n)
 
-func EntAdapterWithDefaultLang(lang string) EntOption {
+func entAdapterWithDefaultLang(lang string) entOption {
 	return func(i *EntI18n) {
 		// TODO
 	}
 }
 
-func EntAdapterWithLang(lang string, i18n interface{}) EntOption {
+func entAdapterWithLang(lang string, i18n interface{}) entOption {
 	return func(i *EntI18n) {
 		// TODO
 	}
 }
 
-func NewEnt(dns string, options ...EntOption) (*EntI18n, error) {
+func newEnt(dns string, options ...entOption) (*EntI18n, error) {
 	i := new(EntI18n)
 	for _, option := range options {
 		if option != nil {

@@ -63,13 +63,13 @@ func WithDefaultLang(lang string) Option {
 	return func(i *I18n) {
 		switch i.t {
 		case Ent:
-			i.opts = append(i.opts, EntAdapterWithDefaultLang(lang))
+			i.opts = append(i.opts, entAdapterWithDefaultLang(lang))
 		case Gorm:
-			i.opts = append(i.opts, GormAdapterWithDefaultLang(lang))
+			i.opts = append(i.opts, gormAdapterWithDefaultLang(lang))
 		case Default:
-			i.opts = append(i.opts, DefaultAdapterWithDefaultLang(lang))
+			i.opts = append(i.opts, defaultAdapterWithDefaultLang(lang))
 		default:
-			i.opts = append(i.opts, DefaultAdapterWithDefaultLang(lang))
+			i.opts = append(i.opts, defaultAdapterWithDefaultLang(lang))
 		}
 	}
 }
@@ -78,13 +78,13 @@ func WithLang(lang string, i18n interface{}) Option {
 	return func(i *I18n) {
 		switch i.t {
 		case Ent:
-			i.opts = append(i.opts, EntAdapterWithLang(lang, i18n))
+			i.opts = append(i.opts, entAdapterWithLang(lang, i18n))
 		case Gorm:
-			i.opts = append(i.opts, GormAdapterWithLang(lang, i18n))
+			i.opts = append(i.opts, gormAdapterWithLang(lang, i18n))
 		case Default:
-			i.opts = append(i.opts, DefaultAdapterWithLang(lang, i18n))
+			i.opts = append(i.opts, defaultAdapterWithLang(lang, i18n))
 		default:
-			i.opts = append(i.opts, DefaultAdapterWithLang(lang, i18n))
+			i.opts = append(i.opts, defaultAdapterWithLang(lang, i18n))
 		}
 	}
 }
@@ -101,23 +101,23 @@ func New(options ...Option) (*I18n, error) {
 	}
 	switch i.t {
 	case Ent:
-		var opts []EntOption
+		var opts []entOption
 		for _, opt := range i.opts {
-			opts = append(opts, opt.(EntOption))
+			opts = append(opts, opt.(entOption))
 		}
-		i.adapter, err = NewEnt(i.dns, opts...)
+		i.adapter, err = newEnt(i.dns, opts...)
 	case Gorm:
-		var opts []GormOption
+		var opts []gormOption
 		for _, opt := range i.opts {
-			opts = append(opts, opt.(GormOption))
+			opts = append(opts, opt.(gormOption))
 		}
-		i.adapter, err = NewGorm(i.dns, opts...)
+		i.adapter, err = newGorm(i.dns, opts...)
 	default:
-		var opts []DefaultOption
+		var opts []defaultOption
 		for _, opt := range i.opts {
-			opts = append(opts, opt.(DefaultOption))
+			opts = append(opts, opt.(defaultOption))
 		}
-		i.adapter, err = NewDefault(opts...)
+		i.adapter, err = newDefault(opts...)
 	}
 	//})
 	if err != nil {
