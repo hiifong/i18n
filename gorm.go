@@ -14,7 +14,7 @@ func (i *GormI18n) TableName() string {
 	return "i18n"
 }
 
-type gormOption func(n *GormI18n)
+type gormOption func(*GormI18n)
 
 func gormAdapterWithDefaultLang(lang string) gormOption {
 	return func(i *GormI18n) {
@@ -38,29 +38,29 @@ func newGorm(dns string, options ...gormOption) (*GormI18n, error) {
 	return i18n, nil
 }
 
-var _ I18ner = (*GormI18n)(nil)
+var _ adapter = (*GormI18n)(nil)
 
-func (i *GormI18n) Register(lang string, i18n interface{}) error {
+func (i *GormI18n) register(lang string, i18n interface{}) error {
 	// TODO
 	return nil
 }
 
-func (i *GormI18n) Update(lang, key string, i18n interface{}) error {
+func (i *GormI18n) update(lang, key string, i18n interface{}) error {
 	// TODO
 	return nil
 }
 
-func (i *GormI18n) SetDefault(lang string) error {
+func (i *GormI18n) setDefault(lang string) error {
 	// TODO
 	return nil
 }
 
-func (i *GormI18n) T(lang string, key string) (string, string, error) {
+func (i *GormI18n) t(lang string, key string) (string, string, error) {
 	// TODO
 	return "", "", nil
 }
 
-func (i *GormI18n) OnlyT(lang string, key string) string {
+func (i *GormI18n) onlyT(lang string, key string) string {
 	// TODO
 	return ""
 }

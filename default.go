@@ -36,7 +36,9 @@ func newDefault(options ...defaultOption) (*DefaultAdapter, error) {
 	return i, nil
 }
 
-func (i *DefaultAdapter) Register(lang string, i18n interface{}) error {
+var _ adapter = (*DefaultAdapter)(nil)
+
+func (i *DefaultAdapter) register(lang string, i18n interface{}) error {
 	i.mu.Lock()
 	defer i.mu.Unlock()
 	if lang == "" {
@@ -53,7 +55,7 @@ func (i *DefaultAdapter) Register(lang string, i18n interface{}) error {
 	return nil
 }
 
-func (i *DefaultAdapter) Update(lang, key string, i18n interface{}) error {
+func (i *DefaultAdapter) update(lang, key string, i18n interface{}) error {
 	i.mu.Lock()
 	defer i.mu.Unlock()
 	if lang == "" {
@@ -73,7 +75,7 @@ func (i *DefaultAdapter) Update(lang, key string, i18n interface{}) error {
 	return nil
 }
 
-func (i *DefaultAdapter) SetDefault(lang string) error {
+func (i *DefaultAdapter) setDefault(lang string) error {
 	i.mu.Lock()
 	defer i.mu.Unlock()
 	if lang == "" {
@@ -86,7 +88,7 @@ func (i *DefaultAdapter) SetDefault(lang string) error {
 	return nil
 }
 
-func (i *DefaultAdapter) T(lang string, key string) (string, string, error) {
+func (i *DefaultAdapter) t(lang string, key string) (string, string, error) {
 	i.mu.RLock()
 	defer i.mu.RUnlock()
 	if i.first == "" {
@@ -119,8 +121,8 @@ func (i *DefaultAdapter) T(lang string, key string) (string, string, error) {
 	return t(lang, key)
 }
 
-func (i *DefaultAdapter) OnlyT(lang string, key string) string {
-	_, msg, err := i.T(lang, key)
+func (i *DefaultAdapter) onlyT(lang string, key string) string {
+	_, msg, err := i.t(lang, key)
 	if err != nil {
 		return ""
 	}

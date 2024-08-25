@@ -19,6 +19,19 @@ type I18ner interface {
 	OnlyT(lang string, key string) string
 }
 
+type adapter interface {
+	// Register 注册新的语言
+	register(lang string, i18n interface{}) error
+	// Update 更新翻译, 如果存在翻译则更新，否则添加翻译
+	update(lang, key string, i18n interface{}) error
+	// SetDefault 设置默认语言
+	setDefault(lang string) error
+	// T 获取翻译
+	t(lang, key string) (string, string, error)
+	// OnlyT 仅获取翻译
+	onlyT(lang string, key string) string
+}
+
 type Type string
 
 const (
@@ -43,7 +56,7 @@ type I18n struct {
 	t       Type // adapter type
 	dns     string
 	opts    []interface{}
-	adapter I18ner
+	adapter adapter
 }
 
 type Option func(*I18n)
@@ -129,21 +142,21 @@ func New(options ...Option) (*I18n, error) {
 var _ I18ner = (*I18n)(nil)
 
 func (i *I18n) Register(lang string, i18n interface{}) error {
-	return i.adapter.Register(lang, i18n)
+	return i.adapter.register(lang, i18n)
 }
 
 func (i *I18n) Update(lang, key string, i18n interface{}) error {
-	return i.adapter.Update(lang, key, i18n)
+	return i.adapter.update(lang, key, i18n)
 }
 
 func (i *I18n) SetDefault(lang string) error {
-	return i.adapter.SetDefault(lang)
+	return i.adapter.setDefault(lang)
 }
 
 func (i *I18n) T(lang string, key string) (string, string, error) {
-	return i.adapter.T(lang, key)
+	return i.adapter.t(lang, key)
 }
 
 func (i *I18n) OnlyT(lang string, key string) string {
-	return i.adapter.OnlyT(lang, key)
+	return i.adapter.onlyT(lang, key)
 }

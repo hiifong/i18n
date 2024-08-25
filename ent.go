@@ -8,7 +8,7 @@ type EntI18n struct {
 	schema.EntI18n
 }
 
-type entOption func(n *EntI18n)
+type entOption func(*EntI18n)
 
 func entAdapterWithDefaultLang(lang string) entOption {
 	return func(i *EntI18n) {
@@ -32,29 +32,29 @@ func newEnt(dns string, options ...entOption) (*EntI18n, error) {
 	return i, nil
 }
 
-var _ I18ner = (*EntI18n)(nil)
+var _ adapter = (*EntI18n)(nil)
 
-func (i *EntI18n) Register(lang string, i18n interface{}) error {
+func (i *EntI18n) register(lang string, i18n interface{}) error {
 	// TODO
 	return nil
 }
 
-func (i *EntI18n) Update(lang, key string, i18n interface{}) error {
+func (i *EntI18n) update(lang, key string, i18n interface{}) error {
 	// TODO
 	return nil
 }
 
-func (i *EntI18n) SetDefault(lang string) error {
+func (i *EntI18n) setDefault(lang string) error {
 	// TODO
 	return nil
 }
 
-func (i *EntI18n) T(lang string, key string) (string, string, error) {
+func (i *EntI18n) t(lang string, key string) (string, string, error) {
 	// TODO
 	return "", "", nil
 }
 
-func (i *EntI18n) OnlyT(lang string, key string) string {
+func (i *EntI18n) onlyT(lang string, key string) string {
 	// TODO
 	return ""
 }
