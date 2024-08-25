@@ -36,8 +36,11 @@ type Type string
 
 const (
 	Default Type = "default"
+	Redis   Type = "redis"
 	Ent     Type = "ent"
 	Gorm    Type = "gorm"
+
+	i18nKey string = "i18n"
 )
 
 var (
@@ -61,6 +64,10 @@ type I18n struct {
 
 type Option func(*I18n)
 
+// WithAdapter dns like:
+// default: nil
+// redis: redis://user:password@localhost:6379/0?protocol=3
+// mysql:
 func WithAdapter(t Type, dns ...string) Option {
 	return func(i *I18n) {
 		if t != "" {
@@ -75,6 +82,8 @@ func WithAdapter(t Type, dns ...string) Option {
 func WithDefaultLang(lang string) Option {
 	return func(i *I18n) {
 		switch i.t {
+		case Redis:
+			i.opts = append(i.opts, redisAdapterWithDefaultLang(lang))
 		case Ent:
 			i.opts = append(i.opts, entAdapterWithDefaultLang(lang))
 		case Gorm:
@@ -90,6 +99,8 @@ func WithDefaultLang(lang string) Option {
 func WithLang(lang string, i18n interface{}) Option {
 	return func(i *I18n) {
 		switch i.t {
+		case Redis:
+			i.opts = append(i.opts, redisAdapterWithLang(lang, i18n))
 		case Ent:
 			i.opts = append(i.opts, entAdapterWithLang(lang, i18n))
 		case Gorm:
@@ -113,6 +124,12 @@ func New(options ...Option) (*I18n, error) {
 		}
 	}
 	switch i.t {
+	case Redis:
+		var opts []redisOption
+		for _, opt := range i.opts {
+			opts = append(opts, opt.(redisOption))
+		}
+		i.adapter, err = newRedis(i.dns, opts...)
 	case Ent:
 		var opts []entOption
 		for _, opt := range i.opts {

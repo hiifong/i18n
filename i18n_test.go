@@ -5,36 +5,36 @@ import (
 )
 
 func TestI18n(t *testing.T) {
-	zhCN := map[string]Language{
-		"hello": {
+	zhCN := []Language{
+		{
 			Key: "hello",
 			Raw: "你好",
 		},
-		"world": {
+		{
 			Key: "world",
 			Raw: "世界",
 		},
-		"hello_world": {
+		{
 			Key: "hello_world",
 			Raw: "你好, 世界",
 		},
 	}
-	enUS := map[string]Language{
-		"hello": {
+	enUS := []Language{
+		{
 			Key: "hello",
 			Raw: "Hello",
 		},
-		"world": {
+		{
 			Key: "world",
 			Raw: "World",
 		},
-		"hello_world": {
+		{
 			Key: "hello_world",
 			Raw: "Hello, World",
 		},
 	}
 	i18n, _ := New(
-		WithAdapter(Default),
+		WithAdapter(Redis, "redis://192.168.5.104:6379/0?protocol=3"),
 		WithDefaultLang(EnUS),
 		WithLang(ZhCN, zhCN),
 	)
@@ -42,17 +42,22 @@ func TestI18n(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	key, msg, err := i18n.T(ZhCN, "hello")
+	key, text, err := i18n.T(ZhCN, "hello")
 	if err != nil {
 		t.Error(err)
 	}
-	t.Logf("key: %s, msg: %s", key, msg)
+	t.Logf("key: %s, text: %s", key, text)
 
-	key, msg, err = i18n.T("", "hello_world")
+	key, text, err = i18n.T("", "hello_world")
 	if err != nil {
 		t.Error(err)
 	}
-	t.Logf("key: %s, msg: %s", key, msg)
+	t.Logf("key: %s, text: %s", key, text)
+	key, text, err = i18n.T(ZhCN, "world")
+	if err != nil {
+		t.Error(err)
+	}
+	t.Logf("key: %s, text: %s\n", key, text)
 
 	err = i18n.Update(ZhCN, "world", Language{
 		Key: "world",
@@ -62,11 +67,11 @@ func TestI18n(t *testing.T) {
 		t.Error(err)
 	}
 
-	key, msg, err = i18n.T(ZhCN, "world")
+	key, text, err = i18n.T(ZhCN, "world")
 	if err != nil {
 		t.Error(err)
 	}
-	t.Logf("key: %s, msg: %s", key, msg)
+	t.Logf("key: %s, text: %s\n", key, text)
 
 	err = i18n.Update(ZhCN, "hello", nil)
 	if err != nil {
@@ -78,11 +83,11 @@ func TestI18n(t *testing.T) {
 		t.Error(err)
 	}
 
-	t.Logf("onlye t: %s", i18n.OnlyT(ZhCN, "hello_world"))
+	t.Logf("onlye t: %s\n", i18n.OnlyT(ZhCN, "hello_world"))
 
-	key, msg, err = i18n.T(ZhHK, "hello")
+	key, text, err = i18n.T(ZhHK, "hello")
 	if err != nil {
 		t.Error(err)
 	}
-	t.Logf("zh_HK key: %s --> msg: %s --> err: %v", key, msg, err)
+	t.Logf("zh_HK key: %s --> text: %s --> err: %v\n", key, text, err)
 }

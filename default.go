@@ -5,28 +5,28 @@ import (
 	"sync"
 )
 
-type defaultAdapter struct {
+type defaultI18n struct {
 	mu    sync.RWMutex
 	first string
 	i18n  map[string]map[string]Language
 }
 
-type defaultOption func(*defaultAdapter)
+type defaultOption func(*defaultI18n)
 
 func defaultAdapterWithDefaultLang(lang string) defaultOption {
-	return func(i *defaultAdapter) {
+	return func(i *defaultI18n) {
 		i.first = lang
 	}
 }
 
 func defaultAdapterWithLang(lang string, i18n interface{}) defaultOption {
-	return func(i *defaultAdapter) {
+	return func(i *defaultI18n) {
 		i.i18n[lang] = i18n.(map[string]Language)
 	}
 }
 
-func newDefault(options ...defaultOption) (*defaultAdapter, error) {
-	i := new(defaultAdapter)
+func newDefault(options ...defaultOption) (*defaultI18n, error) {
+	i := new(defaultI18n)
 	i.i18n = make(map[string]map[string]Language)
 	for _, option := range options {
 		if option != nil {
@@ -36,9 +36,9 @@ func newDefault(options ...defaultOption) (*defaultAdapter, error) {
 	return i, nil
 }
 
-var _ adapter = (*defaultAdapter)(nil)
+var _ adapter = (*defaultI18n)(nil)
 
-func (i *defaultAdapter) register(lang string, i18n interface{}) error {
+func (i *defaultI18n) register(lang string, i18n interface{}) error {
 	i.mu.Lock()
 	defer i.mu.Unlock()
 	if lang == "" {
@@ -55,7 +55,7 @@ func (i *defaultAdapter) register(lang string, i18n interface{}) error {
 	return nil
 }
 
-func (i *defaultAdapter) update(lang, key string, i18n interface{}) error {
+func (i *defaultI18n) update(lang, key string, i18n interface{}) error {
 	i.mu.Lock()
 	defer i.mu.Unlock()
 	if lang == "" {
@@ -75,7 +75,7 @@ func (i *defaultAdapter) update(lang, key string, i18n interface{}) error {
 	return nil
 }
 
-func (i *defaultAdapter) setDefault(lang string) error {
+func (i *defaultI18n) setDefault(lang string) error {
 	i.mu.Lock()
 	defer i.mu.Unlock()
 	if lang == "" {
@@ -88,7 +88,7 @@ func (i *defaultAdapter) setDefault(lang string) error {
 	return nil
 }
 
-func (i *defaultAdapter) t(lang string, key string) (string, string, error) {
+func (i *defaultI18n) t(lang string, key string) (string, string, error) {
 	i.mu.RLock()
 	defer i.mu.RUnlock()
 	if i.first == "" {
@@ -121,10 +121,10 @@ func (i *defaultAdapter) t(lang string, key string) (string, string, error) {
 	return t(lang, key)
 }
 
-func (i *defaultAdapter) onlyT(lang string, key string) string {
-	_, msg, err := i.t(lang, key)
+func (i *defaultI18n) onlyT(lang string, key string) string {
+	_, text, err := i.t(lang, key)
 	if err != nil {
 		return ""
 	}
-	return msg
+	return text
 }

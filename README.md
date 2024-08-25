@@ -4,7 +4,7 @@ golang i18n
 ## install
 
 ```shell
-go get github.com/hiifong/i18n@v1.5.2
+go get github.com/hiifong/i18n@v1.5.3
 ```
 
 ## i18n interface
@@ -25,6 +25,13 @@ type I18ner interface {
 }
 
 ```
+
+## Feature
+
+- [x] default
+- [x] redis
+- [ ] ent
+- [ ] gorm
 
 ## Example
 
