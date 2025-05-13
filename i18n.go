@@ -4,7 +4,8 @@ import "sync"
 
 type Interface interface {
 	Load() error
-	Tr(lang, key string, values ...any) string
+	Tr(lang Lang, key string, values ...any) string
+	Languages() []Lang
 }
 
 var (
@@ -31,6 +32,10 @@ func Load() error {
 	return defI18n.Load()
 }
 
-func Tr(lang, key string, values ...any) string {
+func Tr(lang Lang, key string, values ...any) string {
 	return defI18n.Tr(lang, key, values...)
+}
+
+func Languages() []Lang {
+	return defI18n.Languages()
 }

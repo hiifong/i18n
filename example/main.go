@@ -3,15 +3,18 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 
-	"github.com/hiifong/i18n"
+	"github.com/hiifong/i18n/v2"
 )
 
 func main() {
 	i18n.SetDefault(
 		i18n.New(
-			i18n.WithDir("D:\\hiifong\\Desktop\\project\\i18n\\example"),
-			i18n.WithLang("zh-CN"),
+			i18n.WithDir("/Users/hiifong/Desktop/Golang/i18n/example"),
+			i18n.WithDefLang(i18n.ZhCN),
+			i18n.WithLang(i18n.ZhCN),
+			i18n.WithLang(i18n.EnUS),
 		),
 	)
 	err := i18n.Load()
@@ -19,15 +22,45 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	fmt.Println(i18n.Tr("en-US", "hello"))
-	fmt.Println(i18n.Tr("zh-CN", "hello_to", "hiifong"))
-	fmt.Println(i18n.Tr("en-US", "db.host"))
-	fmt.Println(i18n.Tr("en-US", "db.port"))
-	fmt.Println(i18n.Tr("en-US", "cache.redis.host"))
-	fmt.Println(i18n.Tr("en-US", "cache.redis.port"))
-	fmt.Println(i18n.Tr("en-US", "db.host"))
-	fmt.Println(i18n.Tr("zh-CN", "db.port"))
-	fmt.Println(i18n.Tr("zh-CN", "cache.redis.host"))
-	fmt.Println(i18n.Tr("zh-CN", "cache.redis.port"))
-	fmt.Println(i18n.Tr("zh-HK", "cache.redis.host"))
+	fmt.Printf("all languages: %s\n", i18n.Languages())
+
+	fmt.Println(i18n.Tr(i18n.EnUS, "hello"))
+	fmt.Println(i18n.Tr(i18n.ZhCN, "hello_to", "hiifong"))
+	fmt.Println(i18n.Tr(i18n.EnUS, "db.host"))
+	fmt.Println(i18n.Tr(i18n.EnUS, "db.port"))
+	fmt.Println(i18n.Tr(i18n.EnUS, "cache.redis.host"))
+	fmt.Println(i18n.Tr(i18n.EnUS, "cache.redis.port"))
+	fmt.Println(i18n.Tr(i18n.EnUS, "db.host"))
+	fmt.Println(i18n.Tr(i18n.ZhCN, "db.port"))
+	fmt.Println(i18n.Tr(i18n.ZhCN, "cache.redis.host"))
+	fmt.Println(i18n.Tr(i18n.ZhCN, "cache.redis.port"))
+	fmt.Println(i18n.Tr(i18n.ZhHK, "cache.redis.host"))
+
+	fmt.Println("====================================")
+
+	i18n.SetDefault(
+		i18n.New(
+			i18n.WithFS(http.Dir("/Users/hiifong/Desktop/Golang/i18n/example")),
+			i18n.WithDefLang(i18n.EnUS),
+			i18n.WithLang(i18n.ZhCN),
+			i18n.WithLang(i18n.EnUS),
+		),
+	)
+	err = i18n.Load()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Printf("all languages: %s\n", i18n.Languages())
+	fmt.Println(i18n.Tr(i18n.EnUS, "hello"))
+	fmt.Println(i18n.Tr(i18n.ZhCN, "hello_to", "hiifong"))
+	fmt.Println(i18n.Tr(i18n.EnUS, "db.host"))
+	fmt.Println(i18n.Tr(i18n.EnUS, "db.port"))
+	fmt.Println(i18n.Tr(i18n.EnUS, "cache.redis.host"))
+	fmt.Println(i18n.Tr(i18n.EnUS, "cache.redis.port"))
+	fmt.Println(i18n.Tr(i18n.EnUS, "db.host"))
+	fmt.Println(i18n.Tr(i18n.ZhCN, "db.port"))
+	fmt.Println(i18n.Tr(i18n.ZhCN, "cache.redis.host"))
+	fmt.Println(i18n.Tr(i18n.ZhCN, "cache.redis.port"))
+	fmt.Println(i18n.Tr(i18n.ZhHK, "cache.redis.host"))
 }
