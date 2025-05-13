@@ -8,11 +8,13 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"sync"
 
 	"gopkg.in/ini.v1"
 )
 
 type INI struct {
+	mu sync.RWMutex
 	// dir locale dir path, default: ./
 	dir string
 	// fs locale filesystem
@@ -98,6 +100,8 @@ func New(options ...Option) *INI {
 }
 
 func (i *INI) Load() (err error) {
+	i.mu.Lock()
+	defer i.mu.Unlock()
 	if i.auto {
 		return i.autoLoad()
 	}
@@ -157,6 +161,8 @@ func (i *INI) loadFromFS() (err error) {
 }
 
 func (i *INI) Tr(lang Lang, key string, values ...any) string {
+	i.mu.RLock()
+	defer i.mu.RUnlock()
 	if _, ok := i.iniFileMap[lang]; !ok {
 		if _, ok = i.iniFileMap[i.defaultLang]; !ok {
 			return ""
