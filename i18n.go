@@ -2,7 +2,6 @@ package i18n
 
 import (
 	"fmt"
-	"sync"
 )
 
 type Interface interface {
@@ -12,18 +11,8 @@ type Interface interface {
 }
 
 var (
-	defI18nOnce sync.Once
-	defI18n     Interface
+	defI18n Interface
 )
-
-func Default() Interface {
-	defI18nOnce.Do(func() {
-		if defI18n == nil {
-			defI18n = nil
-		}
-	})
-	return defI18n
-}
 
 func SetDefault(i Interface) {
 	if i != nil {
