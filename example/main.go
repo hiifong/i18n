@@ -9,14 +9,10 @@ import (
 )
 
 func main() {
-	i18n.SetDefault(
-		i18n.New(
-			i18n.WithDir("/Users/hiifong/Desktop/Golang/i18n/example"),
-			i18n.WithDefLang(i18n.ZhCN),
-			i18n.WithLang(i18n.ZhCN),
-			i18n.WithLang(i18n.EnUS),
-		),
-	)
+	i18n.SetDefault(i18n.New(
+		i18n.WithDir("./example"),
+		i18n.WithAuto(),
+	))
 	err := i18n.Load()
 	if err != nil {
 		log.Fatalln(err)
@@ -38,14 +34,10 @@ func main() {
 
 	fmt.Println("====================================")
 
-	i18n.SetDefault(
-		i18n.New(
-			i18n.WithFS(http.Dir("/Users/hiifong/Desktop/Golang/i18n/example")),
-			i18n.WithDefLang(i18n.EnUS),
-			i18n.WithLang(i18n.ZhCN),
-			i18n.WithLang(i18n.EnUS),
-		),
-	)
+	i18n.SetDefault(i18n.New(
+		i18n.WithFS(http.Dir("./example")),
+		i18n.WithAuto(),
+	))
 	err = i18n.Load()
 	if err != nil {
 		log.Fatalln(err)

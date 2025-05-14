@@ -3,6 +3,7 @@ package i18n
 import (
 	"errors"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"path/filepath"
@@ -99,7 +100,7 @@ func New(options ...Option) *INI {
 	return i
 }
 
-func (i *INI) Load() (err error) {
+func (i *INI) Load() error {
 	i.mu.Lock()
 	defer i.mu.Unlock()
 	if i.auto {
@@ -111,12 +112,46 @@ func (i *INI) Load() (err error) {
 	return i.loadFromFS()
 }
 
-func (i *INI) autoLoad() (err error) {
-	// TODO
+func (i *INI) autoLoad() error {
+	for _, lang := range AllLanguages {
+		var path string
+		if i.filename == "" {
+			path = filepath.Join(i.dir, fmt.Sprintf("%s.ini", lang))
+		} else {
+			path = filepath.Join(i.dir, fmt.Sprintf("%s.%s.ini", i.filename, lang))
+		}
+		log.Printf("load locale file %s", path)
+		if i.fs != nil {
+			if file, err := i.fs.Open(path); err == nil {
+				defer file.Close()
+				i.iniFileMap[lang], err = ini.Load(file)
+				if err != nil {
+					log.Printf("fail to load locale file %s err %v", path, err)
+					continue
+				}
+				if !slices.Contains(i.languages, lang) {
+					i.languages = append(i.languages, lang)
+				}
+			} else {
+				log.Printf("fail to load locale file %s err %v", path, err)
+			}
+		} else {
+			var err error
+			i.iniFileMap[lang], err = ini.Load(path)
+			if err != nil {
+				log.Printf("fail to load locale file %s err %v", path, err)
+				continue
+			}
+			if !slices.Contains(i.languages, lang) {
+				i.languages = append(i.languages, lang)
+			}
+		}
+	}
 	return nil
 }
 
-func (i *INI) loadFromDir() (err error) {
+func (i *INI) loadFromDir() error {
+	var err error
 	for _, language := range i.languages {
 		var lerr error
 		var path string
@@ -135,7 +170,8 @@ func (i *INI) loadFromDir() (err error) {
 	return err
 }
 
-func (i *INI) loadFromFS() (err error) {
+func (i *INI) loadFromFS() error {
+	var err error
 	for _, language := range i.languages {
 		var lerr error
 		var path string
@@ -160,30 +196,37 @@ func (i *INI) loadFromFS() (err error) {
 	return err
 }
 
-func (i *INI) Tr(lang Lang, key string, values ...any) string {
+func (i *INI) Default() Lang {
+	return i.defaultLang
+}
+
+func (i *INI) SetDefault(lang Lang) {
+	i.defaultLang = lang
+}
+
+func (i *INI) Tr(lang Lang, key string, values ...any) template.HTML {
 	i.mu.RLock()
 	defer i.mu.RUnlock()
-	if _, ok := i.iniFileMap[lang]; !ok {
-		if _, ok = i.iniFileMap[i.defaultLang]; !ok {
+	if file, ok := i.iniFileMap[lang]; !ok || file == nil {
+		if file, ok := i.iniFileMap[i.defaultLang]; !ok || file == nil {
 			return ""
 		} else {
 			lang = i.defaultLang
 		}
 	}
-
 	if file, ok := i.iniFileMap[lang]; !ok || file == nil {
 		return ""
 	}
 
 	if !strings.Contains(key, ".") {
-		return fmt.Sprintf(i.iniFileMap[lang].Section("").Key(key).String(), values...)
+		return template.HTML(fmt.Sprintf(i.iniFileMap[lang].Section("").Key(key).String(), values...))
 	}
 
 	lastIndex := strings.LastIndex(key, ".")
 
 	section := strings.TrimSuffix(key[:lastIndex], ".")
 	key = strings.TrimPrefix(key[lastIndex:], ".")
-	return fmt.Sprintf(i.iniFileMap[lang].Section(section).Key(key).String(), values...)
+	return template.HTML(fmt.Sprintf(i.iniFileMap[lang].Section(section).Key(key).String(), values...))
 }
 
 func (i *INI) Languages() []Lang {

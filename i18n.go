@@ -2,12 +2,15 @@ package i18n
 
 import (
 	"fmt"
+	"html/template"
 )
 
 type Interface interface {
 	Load() error
-	Tr(lang Lang, key string, values ...any) string
+	Default() Lang
+	SetDefault(Lang)
 	Languages() []Lang
+	Tr(lang Lang, key string, values ...any) template.HTML
 }
 
 var (
@@ -27,7 +30,15 @@ func Load() error {
 	return defI18n.Load()
 }
 
-func Tr(lang Lang, key string, values ...any) string {
+func Default() Lang {
+	return defI18n.Default()
+}
+
+func SetDefaultLang(lang Lang) {
+	defI18n.SetDefault(lang)
+}
+
+func Tr(lang Lang, key string, values ...any) template.HTML {
 	if defI18n == nil {
 		return ""
 	}

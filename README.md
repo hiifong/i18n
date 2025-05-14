@@ -21,14 +21,10 @@ import (
 )
 
 func main() {
-	i18n.SetDefault(
-		i18n.New(
-			i18n.WithDir("/Users/hiifong/Desktop/Golang/i18n/example"),
-			i18n.WithDefLang(i18n.ZhCN),
-			i18n.WithLang(i18n.ZhCN),
-			i18n.WithLang(i18n.EnUS),
-		),
-	)
+	i18n.SetDefault(i18n.New(
+		i18n.WithDir("./example"),
+		i18n.WithAuto(),
+	))
 	err := i18n.Load()
 	if err != nil {
 		log.Fatalln(err)
@@ -50,14 +46,10 @@ func main() {
 
 	fmt.Println("====================================")
 
-	i18n.SetDefault(
-		i18n.New(
-			i18n.WithFS(http.Dir("/Users/hiifong/Desktop/Golang/i18n/example")),
-			i18n.WithDefLang(i18n.EnUS),
-			i18n.WithLang(i18n.ZhCN),
-			i18n.WithLang(i18n.EnUS),
-		),
-	)
+	i18n.SetDefault(i18n.New(
+		i18n.WithFS(http.Dir("./example")),
+		i18n.WithAuto(),
+	))
 	err = i18n.Load()
 	if err != nil {
 		log.Fatalln(err)
@@ -77,12 +69,9 @@ func main() {
 	fmt.Println(i18n.Tr(i18n.ZhHK, "cache.redis.host"))
 }
 
+
 // Output:
-2025/05/13 22:24:24 loading file /Users/hiifong/Desktop/Golang/i18n/example/locale.zh-CN.ini
-2025/05/13 22:24:24 loading file /Users/hiifong/Desktop/Golang/i18n/example/locale.en-US.ini
-2025/05/13 22:24:24 loading file locale.zh-CN.ini
-2025/05/13 22:24:24 loading file locale.en-US.ini
-all languages: [zh-CN en-US]
+all languages: [en-US zh-CN]
 hello
 你好, hiifong
 database host
@@ -93,9 +82,9 @@ database host
 数据库端口
 redis缓存主机
 redis缓存端口
-redis缓存主机
+redis cache host
 ====================================
-all languages: [zh-CN en-US]
+all languages: [en-US zh-CN]
 hello
 你好, hiifong
 database host
