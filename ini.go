@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
+	"io/fs"
 	"log"
-	"net/http"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -19,7 +19,7 @@ type INI struct {
 	// dir locale dir path, default: ./
 	dir string
 	// fs locale filesystem
-	fs http.FileSystem
+	fs fs.FS
 	// auto automatically detect locale and load, filename format must be {filename}.{lang}.ini
 	auto bool
 	// filename locale.en-US.ini, filename is locale, default: locale
@@ -42,7 +42,7 @@ func WithDir(dir string) Option {
 	}
 }
 
-func WithFS(fs http.FileSystem) Option {
+func WithFS(fs fs.FS) Option {
 	return func(i *INI) {
 		if fs != nil {
 			i.fs = fs
